@@ -18,10 +18,10 @@ SERVICE = BLUEPRINT["services"][0]
 ENV = {item["key"]: item for item in SERVICE["envVars"]}
 
 
-def test_there_is_one_always_on_docker_web_service_with_a_health_check():
+def test_there_is_one_docker_web_service_with_a_health_check():
     assert len(BLUEPRINT["services"]) == 1 and SERVICE["type"] == "web" and SERVICE["runtime"] == "docker"
-    assert SERVICE["plan"] != "free"                                            # the free plan sleeps after inactivity
-    assert SERVICE["numInstances"] == 1                                         # jobs and rate-limit counters are per process
+    assert SERVICE["plan"] in {"free", "starter"}                               # free sleeps after inactivity; starter stays awake
+    assert SERVICE.get("numInstances", 1) == 1                                  # jobs and rate-limit counters are per process
     assert SERVICE["healthCheckPath"] == "/health"
     assert SERVICE["dockerfilePath"] == "./Dockerfile" and (ROOT / "Dockerfile").is_file()
 
@@ -74,5 +74,5 @@ def test_the_deployment_guide_explains_the_always_on_plan_and_the_honest_limits(
     for needle in ("free", "15 minutes", "starter", "numinstances", "in memory", "deployed or built", "gemini quota",
                    "trusted_proxy_ips", "private", "ffprobe", "/health"):
         assert needle in lowered, needle
-    assert "pinger" in lowered                                                           # says NOT to use a keep-alive ping on the free plan
+    assert "pinger" in lowered and "sleeps" in lowered                                   # honest about the free plan and keep-alive pings
     assert "docs/deployment.md" in (ROOT / "README.md").read_text(encoding="utf-8")

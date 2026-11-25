@@ -16,6 +16,7 @@ def build_router(limiter, settings: Settings) -> APIRouter:
     limit = limiter.limit(settings.rate_limit_default)
 
     @router.get("/health")
+    @router.head("/health", include_in_schema=False)           # uptime monitors (e.g. UptimeRobot free) probe with HEAD
     @limit
     async def health(request: Request) -> dict[str, str]:
         return {"status": "ok"}

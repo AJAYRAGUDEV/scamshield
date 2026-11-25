@@ -1,15 +1,14 @@
 # Render Blueprint for ScamShield: one always-on Docker web service (the API and the web page are served together).
 #
-# WHY THIS PLAN: Render's FREE web services spin down after about 15 minutes without traffic and take a while to wake up,
-# which also loses the in-memory video jobs. "starter" is a paid instance type that stays running. Keep numInstances at 1:
-# video jobs and rate-limit counters live in the process's memory and are not shared between instances.
+# PLAN: "free" needs no payment method but SLEEPS after about 15 minutes without traffic (the next visitor waits about a minute) and
+# loses in-memory video jobs when it sleeps or restarts. To keep it always awake change the plan below to "starter" (paid) in the
+# dashboard or here. Never run more than one instance: video jobs and rate-limit counters live in memory and are not shared.
 services:
   - type: web
     name: scamshield
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: starter
-    numInstances: 1
+    plan: free        # change to starter (paid) to stop it sleeping
     healthCheckPath: /health
     envVars:
       # Secret: Render asks for it when the Blueprint is created. It is never stored in this repository.

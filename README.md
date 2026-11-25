@@ -168,9 +168,9 @@ server:app` still works (`server.py` is a thin shim).
 
 ## Deploying on Render
 
-`Dockerfile` (Python 3.12 + FFmpeg) and `render.yaml` (one always-on web service, paid `starter` plan, health check `/health`, a single
-instance) are provided. Render's free plan sleeps after about 15 minutes idle and loses in-memory video jobs when it restarts, so use
-a paid instance. Step-by-step setup, the post-deploy checklist and the honest limits (not yet deployed or Docker-built by the
+`Dockerfile` (Python 3.12 + FFmpeg) and `render.yaml` (one web service, health check `/health`, a single instance) are provided. The
+Blueprint uses Render's **free** plan, which needs no payment method but sleeps after about 15 minutes idle (and loses in-memory video
+jobs when it does); switch the instance type to `starter` (paid) to keep it awake. Step-by-step setup, the post-deploy checklist and the honest limits (not yet deployed or Docker-built by the
 developer, per-visitor rate limiting and large uploads still to be verified on Render, no login so your Gemini quota is exposed):
 [docs/deployment.md](docs/deployment.md).
 

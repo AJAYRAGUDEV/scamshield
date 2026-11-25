@@ -44,3 +44,10 @@ def test_startup_and_shutdown_run_and_close_the_provider(app, provider):
         assert running.get("/health").status_code == 200
         assert provider.closed is False
     assert provider.closed is True
+
+
+def test_health_answers_head_requests_for_uptime_monitors(client):
+    head = client.head("/health")
+    assert head.status_code == 200 and head.content == b""
+    assert client.get("/health").json() == {"status": "ok"}
+    assert client.head("/api/v1/status").status_code in (200, 405)          # only /health is promised to monitors
