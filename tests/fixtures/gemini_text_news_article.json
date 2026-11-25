@@ -1,0 +1,38 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_scam_described",
+      "evidence": "The article describes scammers asking victims for one-time passwords.",
+      "source": "text_content",
+      "context": "discussed_or_described",
+      "quote": "scammers ask victims to read out their OTP",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "authority_impersonation",
+      "name": "fake_police_described",
+      "evidence": "The article describes scammers posing as police officers.",
+      "source": "text_content",
+      "context": "discussed_or_described",
+      "quote": "callers pose as police officers",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "threat_coercion",
+      "name": "arrest_threat_described",
+      "evidence": "The article describes threats of arrest used against victims.",
+      "source": "text_content",
+      "context": "discussed_or_described",
+      "quote": "threatened victims with arrest",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

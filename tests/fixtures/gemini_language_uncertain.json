@@ -1,0 +1,20 @@
+{
+  "coverage": "partial",
+  "language": "Tamil (regional dialect)",
+  "language_uncertain": true,
+  "limitations": [
+    "The regional dialect was difficult to interpret."
+  ],
+  "signals": [
+    {
+      "category": "payment_request",
+      "name": "possible_money_request",
+      "evidence": "The message may be asking for money, but the dialect was hard to follow.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "பணம் அனுப்புங்க",
+      "severity": "medium",
+      "reliability": "weak"
+    }
+  ]
+}

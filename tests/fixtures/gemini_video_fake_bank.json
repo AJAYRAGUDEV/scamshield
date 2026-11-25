@@ -1,0 +1,56 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "fake_interface",
+      "name": "fake_bank_login_screen",
+      "evidence": "The video shows a banking login page whose address bar names a different website than the bank it imitates.",
+      "source": "video_visual",
+      "context": "directed_at_recipient",
+      "quote": null,
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 3.0,
+      "timestamp_end": 9.0
+    },
+    {
+      "category": "credential_request",
+      "name": "on_screen_otp_request",
+      "evidence": "A caption tells the viewer to type the OTP they receive into the page.",
+      "source": "video_text",
+      "context": "directed_at_recipient",
+      "quote": "Enter the OTP sent to your phone to unlock your account",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 10.0,
+      "timestamp_end": 14.0
+    },
+    {
+      "category": "authority_impersonation",
+      "name": "spoken_bank_officer",
+      "evidence": "A voice says it is a bank security officer.",
+      "source": "video_audio",
+      "context": "directed_at_recipient",
+      "quote": "I am calling from the bank security team",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 2.0,
+      "timestamp_end": 5.0
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "spoken_deadline",
+      "evidence": "The speaker says the account will be blocked within the hour.",
+      "source": "video_audio",
+      "context": "directed_at_recipient",
+      "quote": "your account will be blocked within one hour",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 15.0,
+      "timestamp_end": 19.0
+    }
+  ]
+}

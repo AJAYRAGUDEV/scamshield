@@ -1,0 +1,23 @@
+{
+  "coverage": "full",
+  "signals": [
+    {
+      "category": "urgency_pressure",
+      "name": "pay_today",
+      "evidence": "Asks for payment today",
+      "source": "text_content",
+      "quote": "please pay today",
+      "severity": "medium",
+      "reliability": "moderate"
+    },
+    {
+      "category": "payment_request",
+      "name": "invoice_payment",
+      "evidence": "Requests payment of an invoice by transfer",
+      "source": "text_content",
+      "quote": "pay the invoice by bank transfer",
+      "severity": "medium",
+      "reliability": "moderate"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "visual_manipulation",
+      "name": "abrupt_transitions",
+      "evidence": "The footage jumps between clips with abrupt, unnatural cuts.",
+      "source": "video_visual",
+      "context": "directed_at_recipient",
+      "quote": null,
+      "severity": "medium",
+      "reliability": "weak",
+      "timestamp_start": 12.0,
+      "timestamp_end": 13.0
+    },
+    {
+      "category": "visual_manipulation",
+      "name": "audio_video_out_of_sync",
+      "evidence": "The speaker's lip movements do not match the audio in this section.",
+      "source": "video_visual",
+      "context": "directed_at_recipient",
+      "quote": null,
+      "severity": "medium",
+      "reliability": "weak",
+      "timestamp_start": 20.0,
+      "timestamp_end": 26.0
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "coverage": "full",
+  "signals": [
+    {
+      "category": "authority_impersonation",
+      "name": "cbi_officer_claim",
+      "evidence": "Caller claims to be a CBI cyber-crime inspector",
+      "source": "text_content",
+      "quote": "This is Inspector Sharma from the CBI",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "threat_coercion",
+      "name": "arrest_warrant_threat",
+      "evidence": "Threatens an arrest warrant and 'digital arrest'",
+      "source": "text_content",
+      "quote": "An arrest warrant has been issued in your name",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "isolation_secrecy",
+      "name": "do_not_tell_anyone",
+      "evidence": "Orders the recipient not to tell anyone or hang up",
+      "source": "text_content",
+      "quote": "Do not tell anyone or disconnect this call",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "payment_request",
+      "name": "upi_transfer_demand",
+      "evidence": "Demands an immediate UPI transfer of Rs 85,000",
+      "source": "text_content",
+      "quote": "transfer Rs 85,000 via UPI within 24 hours",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "twenty_four_hour_deadline",
+      "evidence": "Imposes a 24-hour deadline",
+      "source": "text_content",
+      "quote": "within 24 hours",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

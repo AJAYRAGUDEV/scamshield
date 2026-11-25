@@ -1,0 +1,38 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "authority_impersonation",
+      "name": "income_tax_officer",
+      "evidence": "The sender claims to be an Income Tax Department officer.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "Income Tax Department notice",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "threat_coercion",
+      "name": "legal_action_threat",
+      "evidence": "The message threatens an arrest warrant unless a penalty is paid.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "arrest warrant will be issued today",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "payment_request",
+      "name": "penalty_payment",
+      "evidence": "The recipient is told to pay a penalty by UPI to settle the case.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "pay Rs 45,000 penalty via UPI",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

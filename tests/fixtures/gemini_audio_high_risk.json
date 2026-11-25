@@ -1,0 +1,38 @@
+{
+  "coverage": "full",
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "Caller asks the listener to read out a one-time password",
+      "source": "audio_speech",
+      "quote": "read me the six digit OTP",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 12.5,
+      "timestamp_end": 16.0
+    },
+    {
+      "category": "authority_impersonation",
+      "name": "bank_officer_claim",
+      "evidence": "Caller says they are from the bank fraud team",
+      "source": "audio_speech",
+      "quote": "I am calling from the bank fraud department",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 2.0,
+      "timestamp_end": 5.5
+    },
+    {
+      "category": "scripted_delivery",
+      "name": "uniform_cadence",
+      "evidence": "Unusually uniform, scripted-sounding cadence",
+      "source": "audio_acoustic",
+      "quote": "",
+      "severity": "low",
+      "reliability": "weak",
+      "timestamp_start": 0.0,
+      "timestamp_end": 30.0
+    }
+  ]
+}

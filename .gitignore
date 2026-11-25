@@ -1,0 +1,32 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Test / tooling caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Generated / runtime files
+*.log
+tmp/
+scamshield-*.wav
+scamshield-*.mp3
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

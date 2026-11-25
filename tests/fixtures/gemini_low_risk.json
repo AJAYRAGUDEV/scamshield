@@ -1,0 +1,14 @@
+{
+  "coverage": "full",
+  "signals": [
+    {
+      "category": "authority_impersonation",
+      "name": "official_app_mention",
+      "evidence": "Mentions an 'official app' (ordinary wording)",
+      "source": "text_content",
+      "quote": "the official app",
+      "severity": "low",
+      "reliability": "weak"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_scam_described",
+      "evidence": "The presenter explains that scammers ask for OTPs.",
+      "source": "video_audio",
+      "context": "discussed_or_described",
+      "quote": "never read out your OTP",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 4.0,
+      "timestamp_end": 8.0
+    }
+  ]
+}

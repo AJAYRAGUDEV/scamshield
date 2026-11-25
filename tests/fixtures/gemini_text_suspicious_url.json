@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "verify_via_link",
+      "evidence": "The message asks the recipient to log in through a link to avoid losing access.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "log in to verify your account",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "suspicious_link",
+      "name": "verify_link",
+      "evidence": "The recipient is pushed to open a link that appears to imitate a bank's website.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "paypa1-secure-login.example",
+      "severity": "medium",
+      "reliability": "moderate"
+    }
+  ]
+}

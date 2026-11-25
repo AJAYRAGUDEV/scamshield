@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "advance_fee_or_prize",
+      "name": "prize_requires_fee",
+      "evidence": "An unexpected prize is offered, but a processing fee must be paid first.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "you won Rs 25 lakh, pay Rs 3,000 processing fee",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "claim_within_a_day",
+      "evidence": "The prize must supposedly be claimed within 24 hours.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "claim within 24 hours",
+      "severity": "medium",
+      "reliability": "moderate"
+    }
+  ]
+}

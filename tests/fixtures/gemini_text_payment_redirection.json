@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "payment_redirection",
+      "name": "new_account_details",
+      "evidence": "The message says the usual bank details have changed and money must go to a new personal account.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "our bank details have changed, transfer to this new account",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "impersonation_relationship",
+      "name": "boss_claim",
+      "evidence": "The sender claims to be the recipient's manager asking for an urgent transfer.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "I am your manager, handle this today",
+      "severity": "medium",
+      "reliability": "moderate"
+    }
+  ]
+}

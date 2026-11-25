@@ -1,0 +1,20 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "remote_access_request",
+      "name": "install_screen_share",
+      "evidence": "The caller asks the listener to install a screen-sharing app and read out the access code.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "install the app and give me the code",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 8.0,
+      "timestamp_end": 11.0
+    }
+  ]
+}

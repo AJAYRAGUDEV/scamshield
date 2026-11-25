@@ -1,0 +1,44 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "payment_request",
+      "name": "urgent_transfer",
+      "evidence": "The caller demands an immediate money transfer.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "transfer the money right now",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 20.0,
+      "timestamp_end": 23.0
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "no_time_to_think",
+      "evidence": "The caller says there is no time to think or verify.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "there is no time, do it immediately",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 24.0,
+      "timestamp_end": 27.0
+    },
+    {
+      "category": "isolation_secrecy",
+      "name": "keep_it_secret",
+      "evidence": "The caller tells the listener not to tell anyone.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "do not tell anyone about this call",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 30.0,
+      "timestamp_end": 33.0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_in_script",
+      "evidence": "A fictional character asks another character for an OTP in a story.",
+      "source": "text_content",
+      "context": "fictional_or_example",
+      "quote": "\"Tell me the OTP,\" said Rahul in the scene",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "deadline_in_script",
+      "evidence": "A character in the story sets an artificial deadline.",
+      "source": "text_content",
+      "context": "fictional_or_example",
+      "quote": "you have five minutes",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

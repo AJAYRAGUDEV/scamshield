@@ -1,0 +1,9 @@
+{
+  "coverage": "insufficient",
+  "language": null,
+  "language_uncertain": false,
+  "limitations": [
+    "No intelligible speech was detected."
+  ],
+  "signals": []
+}

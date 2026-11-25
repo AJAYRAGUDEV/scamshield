@@ -1,0 +1,1983 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScamShield AI — Dynamic Threat &amp; Impersonation Intelligence</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --accent: #06b6d4;
+      --accent-glow: rgba(6, 182, 212, 0.35);
+      --accent-soft: rgba(6, 182, 212, 0.12);
+    }
+
+    body[data-theme-risk="low"] {
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.35);
+      --accent-soft: rgba(16, 185, 129, 0.12);
+    }
+
+    body[data-theme-risk="medium"] {
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.35);
+      --accent-soft: rgba(245, 158, 11, 0.14);
+    }
+
+    body[data-theme-risk="high"] {
+      --accent: #f43f5e;
+      --accent-glow: rgba(244, 63, 94, 0.42);
+      --accent-soft: rgba(244, 63, 94, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background-color: #050814;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .ambient-orb {
+      position: fixed;
+      border-radius: 9999px;
+      filter: blur(110px);
+      pointer-events: none;
+      z-index: 0;
+      transition: background 0.9s ease, opacity 0.9s ease;
+    }
+
+    .glass-panel {
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.78), rgba(9, 13, 28, 0.88));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(148, 163, 184, 0.24);
+    }
+
+    .glass-panel-accent {
+      border-color: var(--accent-glow);
+      box-shadow: 0 0 36px -12px var(--accent-glow), 0 20px 50px -20px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Animated Orbiting Shield */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(0.95); opacity: 0.45; }
+      50% { transform: scale(1.08); opacity: 0.9; }
+    }
+
+    @keyframes scanLaser {
+      0% { transform: translateY(-100%); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(380%); opacity: 0; }
+    }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shimmerSweep {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(220%); }
+    }
+
+    .orbit-cw {
+      transform-origin: center;
+      animation: spinSlow 18s linear infinite;
+    }
+
+    .orbit-ccw {
+      transform-origin: center;
+      animation: spinReverse 12s linear infinite;
+    }
+
+    .scanning .orbit-cw {
+      animation-duration: 2.2s;
+    }
+
+    .scanning .orbit-ccw {
+      animation-duration: 1.5s;
+    }
+
+    .pulse-ring {
+      transform-origin: center;
+      animation: pulseRing 3s ease-in-out infinite;
+    }
+
+    .scan-laser-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), #ffffff, var(--accent), transparent);
+      box-shadow: 0 0 18px var(--accent), 0 0 36px var(--accent);
+      animation: scanLaser 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      pointer-events: none;
+    }
+
+    .animate-in-item {
+      opacity: 0;
+      animation: slideUpFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+      transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.2s ease;
+    }
+
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      transform: translateX(-120%) skewX(-20deg);
+    }
+
+    .btn-primary:hover::after {
+      animation: shimmerSweep 0.85s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px -6px rgba(6, 182, 212, 0.55);
+      filter: brightness(1.06);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .dropzone-active {
+      border-color: #06b6d4 !important;
+      background: rgba(6, 182, 212, 0.12) !important;
+      box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.4);
+    }
+
+    .meter-fill {
+      transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .gauge-arc {
+      transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.5s ease;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.65);
+    }
+  </style>
+</head>
+<body data-theme-risk="idle" class="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+  <!-- Dynamic Interactive Neural Grid Background -->
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+  <!-- Ambient Shifting Glows -->
+  <div id="orbTop" class="ambient-orb -top-32 -left-24 w-96 h-96 opacity-35" style="background: radial-gradient(circle, var(--accent), transparent 70%);"></div>
+  <div id="orbBottom" class="ambient-orb -bottom-32 -right-24 w-[28rem] h-[28rem] opacity-25" style="background: radial-gradient(circle, #3b82f6, transparent 70%);"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Main App Shell -->
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
+    <!-- Top Navigation / Telemetry Header -->
+    <header class="glass-panel rounded-2xl px-4 sm:px-6 py-3.5 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <!-- Animated Cyber Shield Emblem -->
+        <div id="shieldCore" class="relative w-12 h-12 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 64 64" class="w-12 h-12 overflow-visible" aria-hidden="true">
+            <circle cx="32" cy="32" r="29" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="6 6" class="orbit-cw opacity-70" />
+            <circle cx="32" cy="32" r="23" fill="none" stroke="#60a5fa" stroke-width="1.2" stroke-dasharray="14 8" class="orbit-ccw opacity-55" />
+            <circle cx="32" cy="32" r="18" fill="var(--accent-soft)" class="pulse-ring" />
+            <path d="M32 14 L46 20 V31 C46 40.5 40 48.2 32 51 C24 48.2 18 40.5 18 31 V20 Z" fill="rgba(15,23,42,0.9)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" />
+            <path d="M27.5 32.5 L30.8 35.8 L37.5 28.5" fill="none" stroke="#e2e8f0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">ScamShield <span class="text-cyan-400">AI</span></h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">v1.0.2</span>
+          </div>
+          <p class="text-xs text-slate-400">Real-time Scam, Coercion &amp; Impersonation Intelligence</p>
+        </div>
+      </div>
+
+      <!-- Engine Controls & Status -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <!-- Status Pill -->
+        <div id="engineStatusPill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900/80 border border-slate-700/80 text-slate-200">
+          <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="statusLabel">Interactive Engine</span>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-800">
+          <button id="btnModeSim" type="button" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            Smart Sim
+          </button>
+          <button id="btnModeApi" type="button" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent">
+            FastAPI Live
+          </button>
+        </div>
+
+        <!-- API Config Toggle -->
+        <button id="btnToggleConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/70 transition-colors">
+          <i data-lucide="key-round" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>API Key</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- GET PROMPT Interactive Task Bar -->
+    <section id="getPromptTaskbar" aria-label="GET PROMPT Task Bar" class="glass-panel rounded-2xl px-4 sm:px-5 py-3 mb-6 border-cyan-500/25">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+        <!-- Branded Task Bar Label -->
+        <div class="flex items-center justify-between lg:justify-start gap-2.5 shrink-0">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/40 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyan-300"></i>
+            <span class="text-xs font-mono font-bold tracking-wider uppercase text-cyan-200">GET PROMPT</span>
+          </div>
+          <span class="text-[11px] text-slate-400 hidden sm:inline lg:hidden">Prompt Task Bar</span>
+        </div>
+
+        <!-- Inline Prompt Command Input -->
+        <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative flex-1">
+            <input
+              id="getPromptInput"
+              type="text"
+              placeholder="Describe what prompt you need (e.g., analyze UPI scam, draft cybercrime report, safe reply)..."
+              class="w-full rounded-xl bg-slate-950/85 border border-slate-700/80 pl-3.5 pr-9 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors"
+            />
+            <button id="btnClearPromptInput" type="button" aria-label="Clear prompt input" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <button id="btnRunGetPrompt" type="button" class="btn-primary px-4 py-2 rounded-xl text-xs font-bold text-white inline-flex items-center justify-center gap-1.5 shrink-0 shadow">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Get Prompt</span>
+          </button>
+        </div>
+
+        <!-- Quick Task Bar Chips -->
+        <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+          <button type="button" data-prompt-task="audit" class="prompt-task-btn px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-900/90 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-200 border border-slate-700/80 hover:border-cyan-500/40 transition-all">
+            Audit Prompt
+          </button>
+          <button type="button" data-prompt-task="incident" class="prompt-task-btn px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-900/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-200 border border-slate-700/80 hover:border-rose-500/40 transition-all">
+            Incident Report
+          </button>
+          <button type="button" data-prompt-task="safe_reply" class="prompt-task-btn px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-900/90 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-200 border border-slate-700/80 hover:border-emerald-500/40 transition-all">
+            Safe Reply
+          </button>
+          <button type="button" data-prompt-task="system" class="prompt-task-btn px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-900/90 hover:bg-purple-500/20 text-slate-300 hover:text-purple-200 border border-slate-700/80 hover:border-purple-500/40 transition-all">
+            System Prompt
+          </button>
+        </div>
+      </div>
+
+      <!-- Expandable Generated Prompt Output -->
+      <div id="getPromptOutputPanel" class="hidden mt-3 pt-3 border-t border-slate-800/90 animate-in-item">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <span id="getPromptOutputTitle" class="text-[11px] font-mono font-semibold uppercase tracking-wider text-cyan-300">Generated Prompt</span>
+          <div class="flex items-center gap-1.5">
+            <button id="btnCopyGeneratedPrompt" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 transition-colors">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+              <span>Copy Prompt</span>
+            </button>
+            <button id="btnSendPromptToScanner" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors">
+              <i data-lucide="arrow-down-left" class="w-3 h-3 text-cyan-400"></i>
+              <span>Load in Scanner</span>
+            </button>
+            <button id="btnClosePromptPanel" type="button" aria-label="Close prompt output" class="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+        <pre id="getPromptOutputText" class="w-full rounded-xl bg-slate-950/90 border border-slate-800 p-3 text-xs font-mono text-slate-200 whitespace-pre-wrap break-words max-h-48 overflow-y-auto leading-relaxed"></pre>
+      </div>
+    </section>
+
+    <!-- Collapsible API Key & Backend Configuration Drawer -->
+    <section id="configDrawer" class="hidden glass-panel rounded-2xl p-4 sm:p-5 mb-6 animate-in-item">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div class="flex-1">
+          <label for="apiKeyInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            Optional Gemini API Key (for FastAPI Live Mode)
+          </label>
+          <div class="relative">
+            <input id="apiKeyInput" type="password" autocomplete="off" placeholder="AIza... (leave blank to use server GEMINI_API_KEY)" class="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 px-3.5 py-2.5 pr-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono" />
+            <button id="btnToggleKeyVis" type="button" aria-label="Toggle API key visibility" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="mt-1.5 text-xs text-slate-400">
+            When served directly from your <code class="text-cyan-300 font-mono">server.py</code>, Live Mode posts to <code class="text-slate-300 font-mono">/api/analyze-text</code> and <code class="text-slate-300 font-mono">/api/analyze-audio</code>. In standalone preview, Smart Sim executes the exact response schema locally.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="btnClearKey" type="button" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors">
+            Clear Key
+          </button>
+          <button id="btnCloseConfig" type="button" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition-colors">
+            Done
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Two-Column Intelligence Workspace -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- LEFT COLUMN: Input & Scanning Console (5 cols) -->
+      <section class="lg:col-span-5 flex flex-col gap-5">
+        <div id="inputCard" class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+          <!-- Active Laser Scanner Overlay (visible during analysis) -->
+          <div id="scannerOverlay" class="hidden absolute inset-0 z-20 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+            <div class="scan-laser-line"></div>
+            <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
+              <svg viewBox="0 0 80 80" class="w-20 h-20">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(6,182,212,0.25)" stroke-width="3" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#06b6d4" stroke-width="3" stroke-dasharray="60 160" stroke-linecap="round" class="orbit-cw" style="animation-duration:1.1s" />
+                <circle cx="40" cy="40" r="24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="30 120" stroke-linecap="round" class="orbit-ccw" style="animation-duration:0.85s" />
+              </svg>
+              <i data-lucide="radar" class="w-7 h-7 text-cyan-400 absolute animate-pulse"></i>
+            </div>
+            <h3 class="text-base font-bold text-white tracking-tight">Deep Threat Inspection</h3>
+            <p id="scanStageText" class="text-xs font-mono text-cyan-300 mt-1.5">Initializing neural signal vectors...</p>
+            <div class="w-56 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-4">
+              <div id="scanProgressBar" class="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 rounded-full transition-all duration-300" style="width: 12%"></div>
+            </div>
+          </div>
+
+          <!-- Input Mode Tabs -->
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <div class="inline-flex p-1 rounded-xl bg-slate-900/90 border border-slate-800 w-full">
+              <button id="tabText" type="button" class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 shadow-sm">
+                <i data-lucide="message-square-warning" class="w-4 h-4"></i>
+                <span>Text / Transcript</span>
+              </button>
+              <button id="tabAudio" type="button" class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent">
+                <i data-lucide="audio-waveform" class="w-4 h-4"></i>
+                <span>Audio Clip</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TEXT INPUT PANEL -->
+          <div id="panelText" class="space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="messageInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400">Suspicious Message or Call Transcript</label>
+                <span id="charCounter" class="text-[11px] font-mono text-slate-400">0 / 20,000</span>
+              </div>
+              <textarea
+                id="messageInput"
+                rows="6"
+                maxlength="20000"
+                placeholder="Paste a suspicious SMS, WhatsApp message, email, or phone call transcript here..."
+                class="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 p-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors resize-y leading-relaxed"
+              ></textarea>
+            </div>
+
+            <!-- Live Heuristic Preview Pills -->
+            <div id="liveKeywordBar" class="hidden flex-wrap items-center gap-1.5 text-[11px]">
+              <span class="text-slate-400 font-medium mr-1">Live triggers:</span>
+              <div id="liveKeywordPills" class="flex flex-wrap gap-1.5"></div>
+            </div>
+
+            <!-- Quick Realistic Threat Presets -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Quick Test Scenarios</span>
+                <button id="btnClearText" type="button" class="text-[11px] text-slate-400 hover:text-cyan-300 transition-colors">Clear</button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" data-preset="digital_arrest" class="preset-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-rose-500/15 border border-slate-800 hover:border-rose-500/40 transition-all group">
+                  <div class="flex items-center gap-1.5 text-xs font-semibold text-rose-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                    Digital Arrest
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">CBI / Customs warrant threat</p>
+                </button>
+                <button type="button" data-preset="bank_otp" class="preset-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-amber-500/15 border border-slate-800 hover:border-amber-500/40 transition-all group">
+                  <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Bank OTP Trap
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Urgent KYC freeze &amp; link</p>
+                </button>
+                <button type="button" data-preset="voice_clone" class="preset-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-purple-500/15 border border-slate-800 hover:border-purple-500/40 transition-all group">
+                  <div class="flex items-center gap-1.5 text-xs font-semibold text-purple-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                    AI CEO Wire
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Scripted urgent transfer</p>
+                </button>
+                <button type="button" data-preset="safe_msg" class="preset-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 transition-all group">
+                  <div class="flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Safe Message
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Routine delivery update</p>
+                </button>
+              </div>
+            </div>
+
+            <button id="btnAnalyzeText" type="button" class="btn-primary w-full py-3 px-4 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 shadow-lg">
+              <i data-lucide="shield-alert" class="w-4 h-4"></i>
+              <span>Run Threat Analysis</span>
+            </button>
+          </div>
+
+          <!-- AUDIO INPUT PANEL -->
+          <div id="panelAudio" class="hidden space-y-4">
+            <!-- Dropzone -->
+            <div id="audioDropzone" class="relative rounded-2xl border-2 border-dashed border-slate-700/90 bg-slate-950/60 p-5 text-center transition-all cursor-pointer hover:border-cyan-500/60 hover:bg-slate-900/60">
+              <input id="audioFileInput" type="file" accept=".mp3,.wav,.m4a,.ogg,.webm,audio/*" class="hidden" />
+              <div class="w-12 h-12 mx-auto rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center mb-3">
+                <i data-lucide="upload-cloud" class="w-6 h-6 text-cyan-400"></i>
+              </div>
+              <p class="text-sm font-semibold text-slate-100">Drop suspicious audio or click to browse</p>
+              <p class="text-xs text-slate-400 mt-1">MP3, WAV, M4A, OGG, WEBM &bull; Max 20 MB</p>
+              <div id="selectedAudioBadge" class="hidden mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-500/35 text-xs text-cyan-200 font-mono">
+                <i data-lucide="file-audio" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span id="selectedAudioName" class="truncate max-w-[200px]"></span>
+                <span id="selectedAudioSize" class="text-cyan-400/80"></span>
+              </div>
+            </div>
+
+            <!-- Live Spectrum Visualizer Canvas -->
+            <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <span id="waveDot" class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  Acoustic Spectrum Monitor
+                </span>
+                <button id="btnPlayPreview" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 transition-colors">
+                  <i data-lucide="play" class="w-3 h-3"></i>
+                  <span id="playPreviewLabel">Pulse Wave</span>
+                </button>
+              </div>
+              <div class="relative h-24 w-full rounded-lg overflow-hidden bg-slate-950">
+                <canvas id="audioWaveCanvas" class="w-full h-full block"></canvas>
+              </div>
+              <audio id="audioPlayer" class="hidden"></audio>
+            </div>
+
+            <!-- Sample Audio Clips for Instant Demo -->
+            <div>
+              <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Or Test Sample Voice Telemetry</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" data-audio-sample="impersonation_call" class="audio-sample-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-rose-500/15 border border-slate-800 hover:border-rose-500/40 transition-all">
+                  <div class="text-xs font-semibold text-rose-300">Urgent Bank Call</div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Coercive script + flat prosody</p>
+                </button>
+                <button type="button" data-audio-sample="benign_voicemail" class="audio-sample-btn text-left px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 transition-all">
+                  <div class="text-xs font-semibold text-emerald-300">Clinic Reminder</div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Natural cadence, no trap</p>
+                </button>
+              </div>
+            </div>
+
+            <button id="btnAnalyzeAudio" type="button" class="btn-primary w-full py-3 px-4 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 shadow-lg">
+              <i data-lucide="mic" class="w-4 h-4"></i>
+              <span>Analyze Audio Clip</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Session Scan History Card -->
+        <div class="glass-panel rounded-2xl p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+              Recent Inspections
+            </h2>
+            <button id="btnClearHistory" type="button" class="text-[11px] text-slate-400 hover:text-rose-300 transition-colors">Clear All</button>
+          </div>
+          <div id="historyList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Dynamic Threat Telemetry Dashboard (7 cols) -->
+      <section class="lg:col-span-7 flex flex-col gap-5">
+        <!-- Top Verdict & Radial Risk Gauge Card -->
+        <div id="verdictCard" class="glass-panel glass-panel-accent rounded-2xl p-5 sm:p-6">
+          <div class="flex flex-col sm:flex-row items-center gap-6">
+            <!-- Animated SVG Radial Risk Gauge -->
+            <div class="relative w-40 h-40 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 160 160" class="w-40 h-40 -rotate-90">
+                <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="11" />
+                <circle id="gaugeArc" cx="80" cy="80" r="66" fill="none" stroke="var(--accent)" stroke-width="11" stroke-linecap="round" stroke-dasharray="414.69" stroke-dashoffset="414.69" class="gauge-arc" style="filter: drop-shadow(0 0 8px var(--accent-glow));" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="riskScoreValue" class="text-4xl font-extrabold tracking-tight text-white font-mono">0</span>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 mt-0.5">Risk Index</span>
+              </div>
+            </div>
+
+            <!-- Verdict Details -->
+            <div class="flex-1 text-center sm:text-left w-full">
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                <span id="verdictBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                  <span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>
+                  Ready
+                </span>
+                <span id="confidenceBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-800/90 text-slate-300 border border-slate-700">
+                  Confidence: --
+                </span>
+                <span id="modeBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-800/90 text-slate-300 border border-slate-700">
+                  Mode: text
+                </span>
+                <span id="fallbackBadge" class="hidden inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <i data-lucide="wifi-off" class="w-3 h-3"></i>
+                  Offline Fallback
+                </span>
+              </div>
+
+              <h2 id="scamTypeHeading" class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                Awaiting Threat Payload
+              </h2>
+              <p id="explanationText" class="text-sm text-slate-300 mt-2 leading-relaxed">
+                Select a quick test scenario or paste any suspicious text/audio to launch ScamShield AI telemetry.
+              </p>
+
+              <!-- Action Utility Buttons -->
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4">
+                <button id="btnCopyAction" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors">
+                  <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  <span>Copy Safe Next Step</span>
+                </button>
+                <button id="btnExportJson" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors">
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  <span>Export JSON</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signal Vector Breakdown: Radar Chart + Animated Meters -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+          <!-- Radar Chart Card -->
+          <div class="md:col-span-6 glass-panel rounded-2xl p-5 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <i data-lucide="crosshair" class="w-4 h-4 text-cyan-400"></i>
+                Threat Vector Radar
+              </h3>
+              <span class="text-[11px] font-mono text-slate-400">0–100 scale</span>
+            </div>
+            <div class="relative h-60 w-full">
+              <canvas id="signalRadarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- 4-Signal Animated Meters -->
+          <div class="md:col-span-6 glass-panel rounded-2xl p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-cyan-400"></i>
+                Signal Breakdown
+              </h3>
+              <span class="text-[11px] font-mono text-slate-400">4 vectors</span>
+            </div>
+            <div id="signalMeters" class="space-y-4 my-auto">
+              <!-- Authority Impersonation -->
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-slate-200">Authority Impersonation</span>
+                  <span id="valAuthority" class="font-mono font-semibold text-cyan-300">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-800/90 overflow-hidden">
+                  <div id="barAuthority" class="meter-fill h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" style="width: 0%"></div>
+                </div>
+              </div>
+              <!-- Urgency & Isolation -->
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-slate-200">Urgency &amp; Isolation</span>
+                  <span id="valUrgency" class="font-mono font-semibold text-cyan-300">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-800/90 overflow-hidden">
+                  <div id="barUrgency" class="meter-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style="width: 0%"></div>
+                </div>
+              </div>
+              <!-- Credential / Payment Trap -->
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-slate-200">Credential / Payment Trap</span>
+                  <span id="valCredential" class="font-mono font-semibold text-cyan-300">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-800/90 overflow-hidden">
+                  <div id="barCredential" class="meter-fill h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-600" style="width: 0%"></div>
+                </div>
+              </div>
+              <!-- Synthetic / Script Signals -->
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-slate-200">Synthetic / Script Signals</span>
+                  <span id="valSynthetic" class="font-mono font-semibold text-cyan-300">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-800/90 overflow-hidden">
+                  <div id="barSynthetic" class="meter-fill h-full rounded-full bg-gradient-to-r from-purple-400 to-indigo-500" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Red Flags & Recommended Safe Action -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+          <!-- Detected Red Flags -->
+          <div class="md:col-span-7 glass-panel rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <i data-lucide="flag" class="w-4 h-4 text-rose-400"></i>
+                Detected Red Flags
+              </h3>
+              <span id="redFlagCount" class="px-2 py-0.5 rounded-full text-[11px] font-mono bg-slate-800 text-slate-300">0</span>
+            </div>
+            <ul id="redFlagsList" class="space-y-2 text-xs text-slate-300">
+              <li class="text-slate-500 italic">No red flags flagged yet.</li>
+            </ul>
+          </div>
+
+          <!-- Recommended Safe Action -->
+          <div class="md:col-span-5 glass-panel rounded-2xl p-5 flex flex-col justify-between border-emerald-500/20">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-2 mb-3">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                Recommended Action
+              </h3>
+              <p id="recommendedActionText" class="text-sm text-slate-200 leading-relaxed">
+                Verify unexpected requests independently through official numbers or apps before sharing credentials or transferring money.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800/90 text-[11px] text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+              <span>Scores indicators in supplied input; does not verify speaker identity.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // STATE & CONFIGURATION
+      // =========================================================================
+      const MAX_TEXT_CHARS = 20000;
+      const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
+      const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.ogg', '.webm'];
+
+      const PRESETS = {
+        digital_arrest: {
+          label: 'Digital Arrest Threat',
+          text: 'URGENT NOTICE: This is Inspector Sharma from the CBI Cyber Crime Department. A parcel linked to your Aadhaar was seized by Customs containing illegal items. An arrest warrant has been issued in your name. You are now under digital arrest. Do not tell anyone or disconnect this call, and transfer Rs 85,000 via UPI within 24 hours to the RBI verification account to clear your case immediately.',
+        },
+        bank_otp: {
+          label: 'Bank KYC & OTP Trap',
+          text: 'Dear Customer, your bank account will be frozen today due to incomplete KYC. Our bank officer requires you to click this link immediately and enter your One-Time Password (OTP) and PIN to prevent permanent suspension.',
+        },
+        voice_clone: {
+          label: 'AI CEO Urgent Wire',
+          text: 'Hey, I am stuck in a confidential board meeting and cannot take a normal call. Keep this secret from finance for now. I need you to transfer money via crypto or gift card to our new vendor immediately—the audio sounded slightly robotic like a synthetic voice or scripted recording, and they rushed me to send bank details within 10 minutes.',
+        },
+        safe_msg: {
+          label: 'Routine Delivery Update',
+          text: 'Hi! Your package from BookStore will arrive between 2 PM and 5 PM tomorrow. No payment is due on delivery. You can track the shipment anytime directly inside your order history in the official app.',
+        },
+      };
+
+      const AUDIO_SAMPLES = {
+        impersonation_call: {
+          name: 'urgent_bank_impersonation_demo.wav',
+          size: '1.4 MB',
+          result: {
+            risk_score: 88,
+            verdict: 'High Risk',
+            scam_type: 'Bank Officer Impersonation & OTP Coercion',
+            confidence_level: 'High',
+            signal_scores: {
+              authority_impersonation: 86,
+              urgency_isolation: 84,
+              credential_payment_trap: 94,
+              synthetic_or_script_signals: 62,
+            },
+            red_flags: [
+              'Caller claims to be a senior bank fraud officer threatening immediate account lockout',
+              'Pressures listener to read back a 6-digit OTP without hanging up',
+              'Repetitive, tightly scripted phrasing with unusually uniform cadence (cannot confirm synthetic origin)',
+            ],
+            explanation: 'Audible content shows strong coercion and credential-harvesting patterns typical of bank impersonation calls. While cadence appears unusually uniform, voice synthesis cannot be proven from audio alone.',
+            recommended_action: 'Hang up immediately and never share OTPs or PINs. Call the official number printed on the back of your bank card to verify your account status.',
+            mode: 'audio',
+            offline_fallback_used: false,
+          },
+        },
+        benign_voicemail: {
+          name: 'clinic_appointment_reminder_demo.wav',
+          size: '620 KB',
+          result: {
+            risk_score: 8,
+            verdict: 'Low Risk',
+            scam_type: 'No strong scam indicators detected',
+            confidence_level: 'Medium',
+            signal_scores: {
+              authority_impersonation: 5,
+              urgency_isolation: 10,
+              credential_payment_trap: 0,
+              synthetic_or_script_signals: 14,
+            },
+            red_flags: [],
+            explanation: 'The clip resembles a routine appointment reminder with natural pacing and no requests for credentials, money, or secrecy. Standard verification still applies if unexpected.',
+            recommended_action: 'If you have an upcoming visit, confirm the appointment time directly through your clinic\'s known phone number or patient portal.',
+            mode: 'audio',
+            offline_fallback_used: false,
+          },
+        },
+      };
+
+      const HEURISTIC_RULES = {
+        authority_impersonation: {
+          weight: 30,
+          phrases: ['police', 'court', 'customs', 'government', 'official', 'cbi', 'rbi', 'bank officer', 'digital arrest', 'inspector', 'cyber crime'],
+        },
+        urgency_isolation: {
+          weight: 25,
+          phrases: ['urgent', 'immediately', 'today', 'within 24 hours', "don't tell", 'do not tell', 'keep this secret', 'arrest warrant', 'frozen', 'suspension'],
+        },
+        credential_payment_trap: {
+          weight: 35,
+          phrases: ['otp', 'one-time password', 'password', 'pin', 'upi', 'transfer money', 'send money', 'bank details', 'gift card', 'crypto', 'click this link'],
+        },
+        synthetic_or_script_signals: {
+          weight: 22,
+          phrases: ['voice clone', 'ai generated', 'synthetic voice', 'deepfake', 'robotic', 'scripted'],
+        },
+      };
+
+      const state = {
+        inputTab: 'text',
+        engineMode: 'sim', // 'sim' | 'api'
+        isScanning: false,
+        selectedAudioFile: null,
+        selectedAudioSampleKey: null,
+        waveActive: false,
+        currentResult: null,
+        history: [],
+        radarChart: null,
+        bgThemeRgb: [6, 182, 212],
+        targetThemeRgb: [6, 182, 212],
+      };
+
+      // =========================================================================
+      // DOM REFERENCES
+      // =========================================================================
+      const el = {
+        bgCanvas: document.getElementById('bgCanvas'),
+        shieldCore: document.getElementById('shieldCore'),
+        statusDot: document.getElementById('statusDot'),
+        statusLabel: document.getElementById('statusLabel'),
+        btnModeSim: document.getElementById('btnModeSim'),
+        btnModeApi: document.getElementById('btnModeApi'),
+        btnToggleConfig: document.getElementById('btnToggleConfig'),
+        configDrawer: document.getElementById('configDrawer'),
+        apiKeyInput: document.getElementById('apiKeyInput'),
+        btnToggleKeyVis: document.getElementById('btnToggleKeyVis'),
+        btnClearKey: document.getElementById('btnClearKey'),
+        btnCloseConfig: document.getElementById('btnCloseConfig'),
+        tabText: document.getElementById('tabText'),
+        tabAudio: document.getElementById('tabAudio'),
+        panelText: document.getElementById('panelText'),
+        panelAudio: document.getElementById('panelAudio'),
+        messageInput: document.getElementById('messageInput'),
+        charCounter: document.getElementById('charCounter'),
+        liveKeywordBar: document.getElementById('liveKeywordBar'),
+        liveKeywordPills: document.getElementById('liveKeywordPills'),
+        btnClearText: document.getElementById('btnClearText'),
+        btnAnalyzeText: document.getElementById('btnAnalyzeText'),
+        audioDropzone: document.getElementById('audioDropzone'),
+        audioFileInput: document.getElementById('audioFileInput'),
+        selectedAudioBadge: document.getElementById('selectedAudioBadge'),
+        selectedAudioName: document.getElementById('selectedAudioName'),
+        selectedAudioSize: document.getElementById('selectedAudioSize'),
+        audioWaveCanvas: document.getElementById('audioWaveCanvas'),
+        audioPlayer: document.getElementById('audioPlayer'),
+        btnPlayPreview: document.getElementById('btnPlayPreview'),
+        playPreviewLabel: document.getElementById('playPreviewLabel'),
+        btnAnalyzeAudio: document.getElementById('btnAnalyzeAudio'),
+        scannerOverlay: document.getElementById('scannerOverlay'),
+        scanStageText: document.getElementById('scanStageText'),
+        scanProgressBar: document.getElementById('scanProgressBar'),
+        gaugeArc: document.getElementById('gaugeArc'),
+        riskScoreValue: document.getElementById('riskScoreValue'),
+        verdictBadge: document.getElementById('verdictBadge'),
+        confidenceBadge: document.getElementById('confidenceBadge'),
+        modeBadge: document.getElementById('modeBadge'),
+        fallbackBadge: document.getElementById('fallbackBadge'),
+        scamTypeHeading: document.getElementById('scamTypeHeading'),
+        explanationText: document.getElementById('explanationText'),
+        recommendedActionText: document.getElementById('recommendedActionText'),
+        redFlagsList: document.getElementById('redFlagsList'),
+        redFlagCount: document.getElementById('redFlagCount'),
+        valAuthority: document.getElementById('valAuthority'),
+        barAuthority: document.getElementById('barAuthority'),
+        valUrgency: document.getElementById('valUrgency'),
+        barUrgency: document.getElementById('barUrgency'),
+        valCredential: document.getElementById('valCredential'),
+        barCredential: document.getElementById('barCredential'),
+        valSynthetic: document.getElementById('valSynthetic'),
+        barSynthetic: document.getElementById('barSynthetic'),
+        btnCopyAction: document.getElementById('btnCopyAction'),
+        btnExportJson: document.getElementById('btnExportJson'),
+        historyList: document.getElementById('historyList'),
+        btnClearHistory: document.getElementById('btnClearHistory'),
+        toastContainer: document.getElementById('toastContainer'),
+        getPromptInput: document.getElementById('getPromptInput'),
+        btnClearPromptInput: document.getElementById('btnClearPromptInput'),
+        btnRunGetPrompt: document.getElementById('btnRunGetPrompt'),
+        getPromptOutputPanel: document.getElementById('getPromptOutputPanel'),
+        getPromptOutputTitle: document.getElementById('getPromptOutputTitle'),
+        getPromptOutputText: document.getElementById('getPromptOutputText'),
+        btnCopyGeneratedPrompt: document.getElementById('btnCopyGeneratedPrompt'),
+        btnSendPromptToScanner: document.getElementById('btnSendPromptToScanner'),
+        btnClosePromptPanel: document.getElementById('btnClosePromptPanel'),
+      };
+
+      // =========================================================================
+      // TOAST NOTIFICATIONS
+      // =========================================================================
+      function showToast(message, type = 'info') {
+        const colors = {
+          info: 'border-cyan-500/40 bg-slate-900/95 text-cyan-200',
+          success: 'border-emerald-500/40 bg-slate-900/95 text-emerald-200',
+          warn: 'border-amber-500/40 bg-slate-900/95 text-amber-200',
+          error: 'border-rose-500/40 bg-slate-900/95 text-rose-200',
+        };
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-medium shadow-xl backdrop-blur-md animate-in-item ${colors[type] || colors.info}`;
+        toast.textContent = message;
+        el.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => toast.remove(), 320);
+        }, 3200);
+      }
+
+      // =========================================================================
+      // INTERACTIVE PARTICLE NEURAL GRID BACKGROUND
+      // =========================================================================
+      function initBackgroundCanvas() {
+        const canvas = el.bgCanvas;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let width = 0;
+        let height = 0;
+        let particles = [];
+        const mouse = { x: -9999, y: -9999 };
+        let sweepAngle = 0;
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+          const count = Math.min(72, Math.max(28, Math.floor((width * height) / 22000)));
+          particles = Array.from({ length: count }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.45,
+            vy: (Math.random() - 0.5) * 0.45,
+            r: Math.random() * 1.8 + 0.9,
+          }));
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+        });
+        window.addEventListener('mouseleave', () => {
+          mouse.x = -9999;
+          mouse.y = -9999;
+        });
+
+        resize();
+
+        function draw() {
+          // Smoothly interpolate theme RGB
+          for (let i = 0; i < 3; i++) {
+            state.bgThemeRgb[i] += (state.targetThemeRgb[i] - state.bgThemeRgb[i]) * 0.04;
+          }
+          const [r, g, b] = state.bgThemeRgb.map((v) => Math.round(v));
+
+          ctx.clearRect(0, 0, width, height);
+
+          // Subtle radar rings near top-right
+          const cx = width * 0.78;
+          const cy = height * 0.28;
+          sweepAngle += state.isScanning ? 0.035 : 0.008;
+          ctx.save();
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.06)`;
+          ctx.lineWidth = 1;
+          [110, 210, 320].forEach((rad) => {
+            ctx.beginPath();
+            ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+          // Sweep beam
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, 320, sweepAngle, sweepAngle + 0.35);
+          ctx.closePath();
+          const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 320);
+          grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.12)`);
+          grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+          ctx.restore();
+
+          // Update & draw nodes
+          const speedBoost = state.isScanning ? 2.4 : 1;
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx * speedBoost;
+            p.y += p.vy * speedBoost;
+            if (p.x < 0 || p.x > width) p.vx *= -1;
+            if (p.y < 0 || p.y > height) p.vy *= -1;
+
+            // Connect nearby nodes
+            for (let j = i + 1; j < particles.length; j++) {
+              const q = particles[j];
+              const dx = p.x - q.x;
+              const dy = p.y - q.y;
+              const dist = Math.hypot(dx, dy);
+              if (dist < 140) {
+                const alpha = (1 - dist / 140) * 0.18;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(q.x, q.y);
+                ctx.stroke();
+              }
+            }
+
+            // Connect to pointer
+            const md = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+            if (md < 170) {
+              ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${(1 - md / 170) * 0.35})`;
+              ctx.lineWidth = 1.1;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.stroke();
+            }
+
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.65)`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          requestAnimationFrame(draw);
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      // =========================================================================
+      // AUDIO SPECTRUM WAVEFORM CANVAS
+      // =========================================================================
+      function initAudioWaveCanvas() {
+        const canvas = el.audioWaveCanvas;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let phase = 0;
+
+        function renderWave() {
+          const rect = canvas.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+              canvas.width = Math.floor(rect.width);
+              canvas.height = Math.floor(rect.height);
+            }
+          }
+          const w = canvas.width || 300;
+          const h = canvas.height || 96;
+          ctx.clearRect(0, 0, w, h);
+
+          const bars = 44;
+          const gap = 3;
+          const barW = Math.max(2, (w - gap * (bars - 1)) / bars);
+          const active = state.waveActive || state.isScanning;
+          phase += active ? 0.12 : 0.03;
+
+          const [r, g, b] = state.bgThemeRgb.map((v) => Math.round(v));
+
+          for (let i = 0; i < bars; i++) {
+            const norm = i / bars;
+            const envelope = Math.sin(norm * Math.PI);
+            const wave1 = Math.sin(phase + i * 0.42);
+            const wave2 = Math.cos(phase * 1.4 - i * 0.25);
+            const amp = active
+              ? (0.25 + 0.72 * Math.abs(wave1 * 0.6 + wave2 * 0.4)) * envelope
+              : (0.1 + 0.14 * Math.abs(wave1)) * (0.4 + 0.6 * envelope);
+            const barH = Math.max(4, amp * (h - 16));
+            const x = i * (barW + gap);
+            const y = (h - barH) / 2;
+
+            const grad = ctx.createLinearGradient(x, y, x, y + barH);
+            grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.95)`);
+            grad.addColorStop(1, 'rgba(59, 130, 246, 0.55)');
+            ctx.fillStyle = grad;
+
+            ctx.beginPath();
+            ctx.roundRect(x, y, barW, barH, 3);
+            ctx.fill();
+          }
+
+          requestAnimationFrame(renderWave);
+        }
+
+        requestAnimationFrame(renderWave);
+      }
+
+      // =========================================================================
+      // RADAR CHART (CHART.JS)
+      // =========================================================================
+      function initRadarChart() {
+        const ctx = document.getElementById('signalRadarChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        state.radarChart = new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: ['Authority', 'Urgency', 'Payment Trap', 'Synthetic'],
+            datasets: [
+              {
+                label: 'Threat Signal',
+                data: [0, 0, 0, 0],
+                backgroundColor: 'rgba(6, 182, 212, 0.22)',
+                borderColor: '#06b6d4',
+                borderWidth: 2,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#06b6d4',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 750,
+              easing: 'easeOutQuart',
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                borderColor: 'rgba(148, 163, 184, 0.25)',
+                borderWidth: 1,
+                titleColor: '#f8fafc',
+                bodyColor: '#cbd5e1',
+                callbacks: {
+                  label: (c) => ` Score: ${c.raw} / 100`,
+                },
+              },
+            },
+            scales: {
+              r: {
+                min: 0,
+                max: 100,
+                ticks: {
+                  stepSize: 25,
+                  color: 'rgba(148, 163, 184, 0.6)',
+                  backdropColor: 'transparent',
+                  font: { size: 10, family: 'JetBrains Mono' },
+                },
+                grid: {
+                  color: 'rgba(148, 163, 184, 0.14)',
+                },
+                angleLines: {
+                  color: 'rgba(148, 163, 184, 0.14)',
+                },
+                pointLabels: {
+                  color: '#cbd5e1',
+                  font: { size: 11, weight: '600', family: 'Inter' },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // =========================================================================
+      // LOCAL SMART SIMULATION ENGINE (MATCHES server.py SCHEMA 100%)
+      // =========================================================================
+      function runLocalTextEngine(text, offlineFlag = false) {
+        const lower = text.toLowerCase();
+        const scores = {};
+        const flags = [];
+
+        Object.entries(HEURISTIC_RULES).forEach(([key, cfg]) => {
+          const found = cfg.phrases.filter((p) => lower.includes(p));
+          scores[key] = Math.min(100, cfg.weight * found.length);
+          found.forEach((p) => {
+            flags.push(`Detected high-signal phrase "${p}" (${key.replace(/_/g, ' ')})`);
+          });
+        });
+
+        // Additional subtle pattern boosts for realistic simulation
+        if (/https?:\/\/|bit\.ly|tinyurl/i.test(text)) {
+          scores.credential_payment_trap = Math.min(100, scores.credential_payment_trap + 20);
+          flags.push('Contains an external link prompting urgent action');
+        }
+        if (/\b\d{4,6}\b/.test(text) && (lower.includes('otp') || lower.includes('code') || lower.includes('pin'))) {
+          scores.credential_payment_trap = Math.min(100, scores.credential_payment_trap + 15);
+        }
+
+        const totalScore = Math.min(
+          100,
+          Math.round(
+            scores.authority_impersonation * 0.35 +
+            scores.urgency_isolation * 0.3 +
+            scores.credential_payment_trap * 0.4 +
+            scores.synthetic_or_script_signals * 0.25 +
+            (flags.length >= 4 ? 18 : 0)
+          )
+        );
+
+        const verdict = totalScore >= 60 ? 'High Risk' : totalScore >= 25 ? 'Suspicious' : 'Low Risk';
+        const confidence = flags.length >= 3 ? 'High' : flags.length >= 1 ? 'Medium' : 'Medium';
+
+        let scamType = 'No common scam pattern detected';
+        if (scores.authority_impersonation >= 50 && scores.urgency_isolation >= 40) {
+          scamType = 'Authority Impersonation / Digital Arrest Coercion';
+        } else if (scores.credential_payment_trap >= 50) {
+          scamType = 'Credential Phishing & Payment Trap';
+        } else if (scores.synthetic_or_script_signals >= 20 && scores.credential_payment_trap >= 25) {
+          scamType = 'Synthetic / Scripted Executive Wire Fraud';
+        } else if (flags.length > 0) {
+          scamType = 'Potential Social Engineering';
+        }
+
+        const explanation =
+          verdict === 'High Risk'
+            ? 'Multiple converging coercion indicators were identified—including authority pressure, time-sensitive isolation, or payment/credential demands. Treat this message as a high-probability scam attempt.'
+            : verdict === 'Suspicious'
+              ? 'Meaningful social-engineering signals appear in this message, though they are not conclusive on their own. Avoid acting until verified through an independent channel.'
+              : 'Little evidence of common impersonation, urgency, or payment-trap tactics was detected in this text. Still exercise caution if the sender is unexpected.';
+
+        const recommendedAction =
+          verdict === 'High Risk'
+            ? 'Do not transfer funds, click links, or share OTPs/PINs. End contact immediately and report the sender via your official bank or cybercrime portal.'
+            : verdict === 'Suspicious'
+              ? 'Pause and verify the claim independently using the organization\'s official app or phone number rather than replying directly.'
+              : 'No urgent threat indicators found. Confirm any logistics directly inside the official service app if needed.';
+
+        return {
+          risk_score: totalScore,
+          verdict,
+          scam_type: scamType,
+          confidence_level: offlineFlag ? 'Low' : confidence,
+          signal_scores: {
+            authority_impersonation: scores.authority_impersonation,
+            urgency_isolation: scores.urgency_isolation,
+            credential_payment_trap: scores.credential_payment_trap,
+            synthetic_or_script_signals: scores.synthetic_or_script_signals,
+          },
+          red_flags: flags.slice(0, 20),
+          explanation,
+          recommended_action: recommendedAction,
+          mode: 'text',
+          offline_fallback_used: offlineFlag,
+        };
+      }
+
+      // =========================================================================
+      // ANIMATED SCANNING SEQUENCE
+      // =========================================================================
+      async function runScanAnimation(mode) {
+        state.isScanning = true;
+        el.shieldCore.classList.add('scanning');
+        el.scannerOverlay.classList.remove('hidden');
+
+        const stages =
+          mode === 'audio'
+            ? [
+                { pct: 24, text: 'Extracting acoustic waveform features...' },
+                { pct: 55, text: 'Scanning for coercion & impersonation cues...' },
+                { pct: 84, text: 'Evaluating prosody & script uniformity...' },
+                { pct: 100, text: 'Compiling threat intelligence report...' },
+              ]
+            : [
+                { pct: 22, text: 'Tokenizing message & entity claims...' },
+                { pct: 52, text: 'Scoring authority & urgency pressure...' },
+                { pct: 82, text: 'Inspecting OTP, UPI & credential traps...' },
+                { pct: 100, text: 'Finalizing calibrated risk verdict...' },
+              ];
+
+        for (const step of stages) {
+          el.scanStageText.textContent = step.text;
+          el.scanProgressBar.style.width = `${step.pct}%`;
+          await new Promise((r) => setTimeout(r, 280));
+        }
+      }
+
+      function stopScanAnimation() {
+        state.isScanning = false;
+        el.shieldCore.classList.remove('scanning');
+        el.scannerOverlay.classList.add('hidden');
+        el.scanProgressBar.style.width = '12%';
+      }
+
+      // =========================================================================
+      // LIVE FASTAPI INTEGRATION (ONLY WHEN SERVED BY USER'S BACKEND)
+      // =========================================================================
+      function canCallSameOriginApi() {
+        try {
+          const proto = window.location.protocol;
+          return (proto === 'https:' || proto === 'http:') && window.location.host !== '' && !window.location.href.startsWith('about:');
+        } catch {
+          return false;
+        }
+      }
+
+      async function analyzeTextRequest(text) {
+        if (state.engineMode === 'api' && canCallSameOriginApi()) {
+          try {
+            const fd = new FormData();
+            fd.append('text', text);
+            const key = el.apiKeyInput.value.trim();
+            if (key) fd.append('api_key', key);
+
+            const res = await fetch('/api/analyze-text', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.detail || `Server error (${res.status})`);
+            }
+            return data;
+          } catch (err) {
+            showToast(`Live API unavailable (${err.message}). Using local fallback.`, 'warn');
+            return runLocalTextEngine(text, true);
+          }
+        }
+        return runLocalTextEngine(text, false);
+      }
+
+      async function analyzeAudioRequest() {
+        if (state.engineMode === 'api' && canCallSameOriginApi() && state.selectedAudioFile) {
+          try {
+            const fd = new FormData();
+            fd.append('file', state.selectedAudioFile);
+            const key = el.apiKeyInput.value.trim();
+            if (key) fd.append('api_key', key);
+
+            const res = await fetch('/api/analyze-audio', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.detail || `Server error (${res.status})`);
+            }
+            return data;
+          } catch (err) {
+            showToast(`Live API unavailable (${err.message}). Showing offline audio notice.`, 'warn');
+            return {
+              risk_score: 0,
+              verdict: 'Low Risk',
+              scam_type: 'Unassessed audio',
+              confidence_level: 'Low',
+              signal_scores: {
+                authority_impersonation: 0,
+                urgency_isolation: 0,
+                credential_payment_trap: 0,
+                synthetic_or_script_signals: 0,
+              },
+              red_flags: [],
+              explanation: 'The audio could not be assessed because the analysis service is offline. No conclusion about this clip can be drawn locally.',
+              recommended_action: 'Do not act on urgent requests in the clip. Verify the speaker through a trusted contact method and retry when online.',
+              mode: 'audio',
+              offline_fallback_used: true,
+            };
+          }
+        }
+
+        // Simulation mode: use chosen sample or synthesize realistic telemetry for uploaded clip
+        if (state.selectedAudioSampleKey && AUDIO_SAMPLES[state.selectedAudioSampleKey]) {
+          return JSON.parse(JSON.stringify(AUDIO_SAMPLES[state.selectedAudioSampleKey].result));
+        }
+        return {
+          risk_score: 54,
+          verdict: 'Suspicious',
+          scam_type: 'Simulated Audio Inspection (Preview Mode)',
+          confidence_level: 'Medium',
+          signal_scores: {
+            authority_impersonation: 48,
+            urgency_isolation: 64,
+            credential_payment_trap: 42,
+            synthetic_or_script_signals: 38,
+          },
+          red_flags: [
+            `Loaded audio clip "${state.selectedAudioFile ? state.selectedAudioFile.name : 'audio_sample'}" for inspection`,
+            'Preview mode simulates acoustic scoring; host beside server.py for full Gemini audio analysis',
+          ],
+          explanation: 'Your audio file was validated locally (format & size under 20 MB). Connect this page to your FastAPI server.py to upload and score real audio via Gemini.',
+          recommended_action: 'Do not act on urgent requests in the recording until independently verified through a trusted contact.',
+          mode: 'audio',
+          offline_fallback_used: false,
+        };
+      }
+
+      // =========================================================================
+      // RENDER RESULT WITH DYNAMIC MOTION
+      // =========================================================================
+      function animateCounter(element, target) {
+        const start = parseInt(element.textContent, 10) || 0;
+        const duration = 750;
+        const startTime = performance.now();
+
+        function tick(now) {
+          const progress = Math.min(1, (now - startTime) / duration);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          element.textContent = Math.round(start + (target - start) * eased);
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function renderResult(res, sourceLabel = '') {
+        state.currentResult = res;
+
+        // 1. Dynamic Color Theme Shift
+        let themeKey = 'low';
+        let badgeClasses = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        let chartColor = '#10b981';
+        let chartFill = 'rgba(16, 185, 129, 0.22)';
+        state.targetThemeRgb = [16, 185, 129];
+
+        if (res.verdict === 'High Risk') {
+          themeKey = 'high';
+          badgeClasses = 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+          chartColor = '#f43f5e';
+          chartFill = 'rgba(244, 63, 94, 0.24)';
+          state.targetThemeRgb = [244, 63, 94];
+        } else if (res.verdict === 'Suspicious') {
+          themeKey = 'medium';
+          badgeClasses = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+          chartColor = '#f59e0b';
+          chartFill = 'rgba(245, 158, 11, 0.24)';
+          state.targetThemeRgb = [245, 158, 11];
+        }
+
+        document.body.setAttribute('data-theme-risk', themeKey);
+
+        // 2. Radial Gauge Animation
+        const circumference = 2 * Math.PI * 66; // 414.69
+        const offset = circumference * (1 - Math.max(0, Math.min(100, res.risk_score)) / 100);
+        el.gaugeArc.style.strokeDashoffset = offset.toFixed(2);
+        animateCounter(el.riskScoreValue, res.risk_score);
+
+        // 3. Badges & Text
+        el.verdictBadge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${badgeClasses}`;
+        el.verdictBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>${escapeHtml(res.verdict)}`;
+        el.confidenceBadge.textContent = `Confidence: ${res.confidence_level}`;
+        el.modeBadge.textContent = `Mode: ${res.mode}`;
+        el.fallbackBadge.classList.toggle('hidden', !res.offline_fallback_used);
+
+        el.scamTypeHeading.textContent = res.scam_type;
+        el.explanationText.textContent = res.explanation;
+        el.recommendedActionText.textContent = res.recommended_action;
+
+        // 4. Signal Meters & Radar Chart
+        const s = res.signal_scores;
+        updateMeter(el.valAuthority, el.barAuthority, s.authority_impersonation);
+        updateMeter(el.valUrgency, el.barUrgency, s.urgency_isolation);
+        updateMeter(el.valCredential, el.barCredential, s.credential_payment_trap);
+        updateMeter(el.valSynthetic, el.barSynthetic, s.synthetic_or_script_signals);
+
+        if (state.radarChart) {
+          state.radarChart.data.datasets[0].data = [
+            s.authority_impersonation,
+            s.urgency_isolation,
+            s.credential_payment_trap,
+            s.synthetic_or_script_signals,
+          ];
+          state.radarChart.data.datasets[0].borderColor = chartColor;
+          state.radarChart.data.datasets[0].backgroundColor = chartFill;
+          state.radarChart.data.datasets[0].pointBorderColor = chartColor;
+          state.radarChart.update();
+        }
+
+        // 5. Staggered Red Flags
+        const flags = Array.isArray(res.red_flags) ? res.red_flags : [];
+        el.redFlagCount.textContent = String(flags.length);
+        el.redFlagsList.innerHTML = '';
+
+        if (flags.length === 0) {
+          el.redFlagsList.innerHTML = '<li class="flex items-center gap-2 text-emerald-300/90 py-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>No specific scam red flags flagged in this input.</li>';
+        } else {
+          flags.forEach((flag, idx) => {
+            const li = document.createElement('li');
+            li.className = 'animate-in-item flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-900/75 border border-slate-800/90';
+            li.style.animationDelay = `${idx * 65}ms`;
+            li.innerHTML = `<span class="mt-1 w-2 h-2 rounded-full shrink-0 ${res.verdict === 'High Risk' ? 'bg-rose-400' : 'bg-amber-400'}"></span><span class="leading-snug">${escapeHtml(flag)}</span>`;
+            el.redFlagsList.appendChild(li);
+          });
+        }
+
+        // 6. Push to History if new
+        if (sourceLabel) {
+          state.history.unshift({
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            label: sourceLabel,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            result: res,
+          });
+          if (state.history.length > 10) state.history.pop();
+          renderHistory();
+        }
+      }
+
+      function updateMeter(valEl, barEl, score) {
+        const clamped = Math.max(0, Math.min(100, Number(score) || 0));
+        valEl.textContent = `${clamped}%`;
+        barEl.style.width = `${clamped}%`;
+      }
+
+      function renderHistory() {
+        el.historyList.innerHTML = '';
+        if (state.history.length === 0) {
+          el.historyList.innerHTML = '<p class="text-xs text-slate-500 italic py-2 text-center">No inspections logged in this session.</p>';
+          return;
+        }
+        state.history.forEach((item) => {
+          const dotColor =
+            item.result.verdict === 'High Risk'
+              ? 'bg-rose-400'
+              : item.result.verdict === 'Suspicious'
+                ? 'bg-amber-400'
+                : 'bg-emerald-400';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full text-left flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-800/80 border border-slate-800/90 transition-colors';
+          btn.innerHTML = `
+            <div class="min-w-0 flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full shrink-0 ${dotColor}"></span>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-slate-200 truncate">${escapeHtml(item.label)}</div>
+                <div class="text-[10px] font-mono text-slate-400">${escapeHtml(item.result.mode.toUpperCase())} &bull; ${escapeHtml(item.timestamp)}</div>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-bold text-slate-200 shrink-0">${item.result.risk_score}/100</span>
+          `;
+          btn.addEventListener('click', () => {
+            renderResult(item.result);
+            showToast(`Loaded inspection: ${item.label}`, 'info');
+          });
+          el.historyList.appendChild(btn);
+        });
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // =========================================================================
+      // LIVE KEYWORD RADAR PREVIEW ON TEXT INPUT
+      // =========================================================================
+      function updateTextPreview() {
+        const val = el.messageInput.value;
+        el.charCounter.textContent = `${val.length.toLocaleString()} / ${MAX_TEXT_CHARS.toLocaleString()}`;
+
+        const lower = val.toLowerCase();
+        const hits = [];
+        Object.values(HEURISTIC_RULES).forEach((cfg) => {
+          cfg.phrases.forEach((p) => {
+            if (lower.includes(p) && !hits.includes(p)) hits.push(p);
+          });
+        });
+
+        if (hits.length === 0) {
+          el.liveKeywordBar.classList.add('hidden');
+          el.liveKeywordBar.classList.remove('flex');
+          el.liveKeywordPills.innerHTML = '';
+        } else {
+          el.liveKeywordBar.classList.remove('hidden');
+          el.liveKeywordBar.classList.add('flex');
+          el.liveKeywordPills.innerHTML = hits
+            .slice(0, 6)
+            .map((h) => `<span class="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/35 text-rose-300 font-mono">${escapeHtml(h)}</span>`)
+            .join('');
+        }
+      }
+
+      // =========================================================================
+      // AUDIO SELECTION HANDLER
+      // =========================================================================
+      function handleAudioFile(file) {
+        if (!file) return;
+        const lowerName = file.name.toLowerCase();
+        const validExt = ALLOWED_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+        if (!validExt) {
+          showToast('Unsupported audio format. Use MP3, WAV, M4A, OGG, or WEBM.', 'error');
+          return;
+        }
+        if (file.size > MAX_AUDIO_BYTES) {
+          showToast('Audio file exceeds the 20 MB limit.', 'error');
+          return;
+        }
+        state.selectedAudioFile = file;
+        state.selectedAudioSampleKey = null;
+        el.selectedAudioName.textContent = file.name;
+        el.selectedAudioSize.textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+        el.selectedAudioBadge.classList.remove('hidden');
+
+        try {
+          el.audioPlayer.src = URL.createObjectURL(file);
+        } catch {
+          // Safe fallback if object URL unavailable
+        }
+        showToast(`Loaded audio: ${file.name}`, 'success');
+      }
+
+      // =========================================================================
+      // EVENT LISTENERS
+      // =========================================================================
+      function bindEvents() {
+        // Engine Mode Switch
+        el.btnModeSim.addEventListener('click', () => {
+          state.engineMode = 'sim';
+          el.btnModeSim.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+          el.btnModeApi.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent';
+          el.statusLabel.textContent = 'Interactive Engine';
+          el.statusDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+          showToast('Switched to Smart Simulation Engine', 'info');
+        });
+
+        el.btnModeApi.addEventListener('click', () => {
+          state.engineMode = 'api';
+          el.btnModeApi.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+          el.btnModeSim.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent';
+          el.statusLabel.textContent = 'FastAPI Live Mode';
+          el.statusDot.className = 'w-2 h-2 rounded-full bg-cyan-400 animate-pulse';
+          showToast('Live Mode enabled — posts to /api/analyze-text & /api/analyze-audio when hosted with server.py', 'info');
+        });
+
+        // API Key Drawer
+        el.btnToggleConfig.addEventListener('click', () => {
+          el.configDrawer.classList.toggle('hidden');
+        });
+        el.btnCloseConfig.addEventListener('click', () => {
+          el.configDrawer.classList.add('hidden');
+        });
+        el.btnClearKey.addEventListener('click', () => {
+          el.apiKeyInput.value = '';
+          showToast('API key cleared from input', 'info');
+        });
+        el.btnToggleKeyVis.addEventListener('click', () => {
+          const isPass = el.apiKeyInput.type === 'password';
+          el.apiKeyInput.type = isPass ? 'text' : 'password';
+        });
+
+        // Input Tabs
+        el.tabText.addEventListener('click', () => {
+          state.inputTab = 'text';
+          el.tabText.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 shadow-sm';
+          el.tabAudio.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent';
+          el.panelText.classList.remove('hidden');
+          el.panelAudio.classList.add('hidden');
+        });
+
+        el.tabAudio.addEventListener('click', () => {
+          state.inputTab = 'audio';
+          el.tabAudio.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 shadow-sm';
+          el.tabText.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent';
+          el.panelAudio.classList.remove('hidden');
+          el.panelText.classList.add('hidden');
+        });
+
+        // Text Input & Presets
+        el.messageInput.addEventListener('input', updateTextPreview);
+        el.btnClearText.addEventListener('click', () => {
+          el.messageInput.value = '';
+          updateTextPreview();
+        });
+
+        document.querySelectorAll('.preset-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const key = btn.getAttribute('data-preset');
+            const preset = PRESETS[key];
+            if (!preset || state.isScanning) return;
+            el.messageInput.value = preset.text;
+            updateTextPreview();
+            await triggerTextScan(preset.label);
+          });
+        });
+
+        el.btnAnalyzeText.addEventListener('click', async () => {
+          if (state.isScanning) return;
+          const text = el.messageInput.value.trim();
+          if (!text) {
+            showToast('Enter a suspicious message or select a quick scenario first.', 'warn');
+            return;
+          }
+          const shortLabel = text.slice(0, 34) + (text.length > 34 ? '...' : '');
+          await triggerTextScan(shortLabel);
+        });
+
+        // Audio Dropzone & Samples
+        el.audioDropzone.addEventListener('click', () => el.audioFileInput.click());
+        el.audioFileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) handleAudioFile(e.target.files[0]);
+        });
+        el.audioDropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          el.audioDropzone.classList.add('dropzone-active');
+        });
+        el.audioDropzone.addEventListener('dragleave', () => {
+          el.audioDropzone.classList.remove('dropzone-active');
+        });
+        el.audioDropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          el.audioDropzone.classList.remove('dropzone-active');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleAudioFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        el.btnPlayPreview.addEventListener('click', () => {
+          state.waveActive = !state.waveActive;
+          el.playPreviewLabel.textContent = state.waveActive ? 'Pause Wave' : 'Pulse Wave';
+          if (el.audioPlayer.src) {
+            if (state.waveActive) {
+              el.audioPlayer.play().catch(() => {});
+            } else {
+              el.audioPlayer.pause();
+            }
+          }
+        });
+
+        document.querySelectorAll('.audio-sample-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            if (state.isScanning) return;
+            const key = btn.getAttribute('data-audio-sample');
+            const sample = AUDIO_SAMPLES[key];
+            if (!sample) return;
+            state.selectedAudioSampleKey = key;
+            state.selectedAudioFile = null;
+            el.selectedAudioName.textContent = sample.name;
+            el.selectedAudioSize.textContent = `(${sample.size})`;
+            el.selectedAudioBadge.classList.remove('hidden');
+            state.waveActive = true;
+            el.playPreviewLabel.textContent = 'Pause Wave';
+            await triggerAudioScan(sample.name);
+            state.waveActive = false;
+            el.playPreviewLabel.textContent = 'Pulse Wave';
+          });
+        });
+
+        el.btnAnalyzeAudio.addEventListener('click', async () => {
+          if (state.isScanning) return;
+          if (!state.selectedAudioFile && !state.selectedAudioSampleKey) {
+            showToast('Upload an audio file or pick a sample voice clip first.', 'warn');
+            return;
+          }
+          const label = state.selectedAudioFile
+            ? state.selectedAudioFile.name
+            : AUDIO_SAMPLES[state.selectedAudioSampleKey].name;
+          await triggerAudioScan(label);
+        });
+
+        // Utility Buttons
+        el.btnCopyAction.addEventListener('click', () => {
+          const text = el.recommendedActionText.textContent || '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              () => showToast('Recommended action copied to clipboard', 'success'),
+              () => fallbackCopy(text)
+            );
+          } else {
+            fallbackCopy(text);
+          }
+        });
+
+        el.btnExportJson.addEventListener('click', () => {
+          if (!state.currentResult) {
+            showToast('Run an analysis first to export JSON.', 'warn');
+            return;
+          }
+          const blob = new Blob([JSON.stringify(state.currentResult, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `scamshield-report-${Date.now()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          showToast('Exported ScamAnalysisResponse JSON', 'success');
+        });
+
+        // GET PROMPT Task Bar Logic
+        const SYSTEM_PROMPT_TEXT = [
+          'You are ScamShield AI, a cautious scam and impersonation intelligence assistant.',
+          'Assess only evidence in the supplied message/transcript or audio. Do not claim to',
+          'authenticate a speaker, prove a voice is synthetic, or verify facts you cannot verify.',
+          "Score scam indicators, not a person's character. Be calibrated and non-alarmist.",
+          'Use Low Risk for little evidence, Suspicious for meaningful but inconclusive signals,',
+          'and High Risk only for strong scam indicators. Red flags must be concise and grounded',
+          'in the input. Give a practical, safe next step. For audio, describe only audible/content',
+          'evidence and state uncertainty. Return the required JSON schema.',
+        ].join('\n');
+
+        function buildPromptForTask(taskKey, customGoal = '') {
+          const msg = (el.messageInput.value || '').trim();
+          const res = state.currentResult;
+          const flagsText = res && res.red_flags && res.red_flags.length
+            ? res.red_flags.map((f) => `- ${f}`).join('\n')
+            : '- No specific red flags flagged yet';
+          const quoteBlock = msg || '[Paste suspicious message here]';
+
+          if (taskKey === 'system') {
+            return {
+              title: 'ScamShield AI — Backend System Prompt',
+              body: SYSTEM_PROMPT_TEXT,
+            };
+          }
+          if (taskKey === 'incident') {
+            return {
+              title: 'Incident & Cybercrime Report Prompt',
+              body: `Draft a concise, factual incident report for my bank and cybercrime helpline based on this ScamShield AI assessment:\n\nVerdict: ${res ? res.verdict : 'Pending'} (Risk Score: ${res ? res.risk_score : 0}/100)\nSuspected Pattern: ${res ? res.scam_type : 'Unclassified'}\nObserved Red Flags:\n${flagsText}\n\nOriginal Message / Transcript:\n---\n${quoteBlock}\n---`,
+            };
+          }
+          if (taskKey === 'safe_reply') {
+            return {
+              title: 'Safe Non-Escalating Verification Reply Prompt',
+              body: `Write a short, polite, non-committal reply that refuses to share OTPs, PINs, or money and states that I will verify independently through official channels.\n\nContext (${res ? res.verdict : 'Unassessed'} — ${res ? res.scam_type : 'General'}):\n---\n${quoteBlock}\n---`,
+            };
+          }
+          if (taskKey === 'custom' && customGoal) {
+            return {
+              title: `Custom Prompt — ${customGoal.slice(0, 42)}${customGoal.length > 42 ? '...' : ''}`,
+              body: `Role: You are ScamShield AI, a cautious scam and impersonation intelligence assistant.\nTask: ${customGoal}\n\nCurrent Assessment: ${res ? `${res.verdict} (${res.risk_score}/100) — ${res.scam_type}` : 'Not yet scanned'}\nEvidence / Input:\n---\n${quoteBlock}\n---\n\nConstraints: Base your answer strictly on observable evidence, avoid alarmism, and end with one practical safe next step.`,
+            };
+          }
+          return {
+            title: 'Structured Scam Audit Prompt',
+            body: `Analyze the following suspicious message or call transcript for authority impersonation, urgency/isolation, credential/payment traps, and synthetic/scripted signals. Return a calibrated risk score (0–100), concise red flags grounded in the text, and a safe next step:\n\n---\n${quoteBlock}\n---`,
+          };
+        }
+
+        function showGeneratedPrompt(taskKey, customGoal = '') {
+          const built = buildPromptForTask(taskKey, customGoal);
+          el.getPromptOutputTitle.textContent = built.title;
+          el.getPromptOutputText.textContent = built.body;
+          el.getPromptOutputPanel.classList.remove('hidden');
+          showToast(`Prompt ready: ${built.title}`, 'success');
+        }
+
+        el.getPromptInput.addEventListener('input', () => {
+          el.btnClearPromptInput.classList.toggle('hidden', !el.getPromptInput.value.trim());
+        });
+
+        el.btnClearPromptInput.addEventListener('click', () => {
+          el.getPromptInput.value = '';
+          el.btnClearPromptInput.classList.add('hidden');
+          el.getPromptInput.focus();
+        });
+
+        el.btnRunGetPrompt.addEventListener('click', () => {
+          const custom = el.getPromptInput.value.trim();
+          showGeneratedPrompt(custom ? 'custom' : 'audit', custom);
+        });
+
+        el.getPromptInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const custom = el.getPromptInput.value.trim();
+            showGeneratedPrompt(custom ? 'custom' : 'audit', custom);
+          }
+        });
+
+        document.querySelectorAll('.prompt-task-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const taskKey = btn.getAttribute('data-prompt-task') || 'audit';
+            showGeneratedPrompt(taskKey);
+          });
+        });
+
+        el.btnCopyGeneratedPrompt.addEventListener('click', () => {
+          const text = el.getPromptOutputText.textContent || '';
+          if (!text) return;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              () => showToast('Prompt copied to clipboard', 'success'),
+              () => fallbackCopy(text)
+            );
+          } else {
+            fallbackCopy(text);
+          }
+        });
+
+        el.btnSendPromptToScanner.addEventListener('click', () => {
+          const text = el.getPromptOutputText.textContent || '';
+          if (!text) return;
+          el.tabText.click();
+          el.messageInput.value = text;
+          updateTextPreview();
+          el.messageInput.focus();
+          showToast('Prompt loaded into Text Scanner', 'info');
+        });
+
+        el.btnClosePromptPanel.addEventListener('click', () => {
+          el.getPromptOutputPanel.classList.add('hidden');
+        });
+
+        el.btnClearHistory.addEventListener('click', () => {
+          state.history = [];
+          renderHistory();
+          showToast('Inspection history cleared', 'info');
+        });
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Recommended action copied to clipboard', 'success');
+        } catch {
+          showToast('Unable to copy text automatically', 'error');
+        }
+        ta.remove();
+      }
+
+      async function triggerTextScan(label) {
+        const text = el.messageInput.value.trim();
+        await runScanAnimation('text');
+        const res = await analyzeTextRequest(text);
+        stopScanAnimation();
+        renderResult(res, label);
+      }
+
+      async function triggerAudioScan(label) {
+        await runScanAnimation('audio');
+        const res = await analyzeAudioRequest();
+        stopScanAnimation();
+        renderResult(res, label);
+      }
+
+      // =========================================================================
+      // BOOTSTRAP
+      // =========================================================================
+      window.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        initBackgroundCanvas();
+        initAudioWaveCanvas();
+        initRadarChart();
+        bindEvents();
+
+        // Launch with an initial rich demo scenario so the dashboard opens alive
+        el.messageInput.value = PRESETS.digital_arrest.text;
+        updateTextPreview();
+        const initialResult = runLocalTextEngine(PRESETS.digital_arrest.text, false);
+        renderResult(initialResult, PRESETS.digital_arrest.label);
+      });
+    })();
+  </script>
+</body>
+</html>
+index.html
+Displaying index.html.

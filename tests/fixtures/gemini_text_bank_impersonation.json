@@ -1,0 +1,38 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "authority_impersonation",
+      "name": "bank_fraud_officer",
+      "evidence": "The sender claims to be from a bank's fraud team to gain trust.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "This is the HDFC Bank fraud prevention team",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The message asks the recipient to reply with the one-time password sent to their phone.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "reply with the OTP you just received",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "block_in_one_hour",
+      "evidence": "The message threatens that the account will be blocked within an hour.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "account will be blocked in 1 hour",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

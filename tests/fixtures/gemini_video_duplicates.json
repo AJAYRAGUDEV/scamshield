@@ -1,0 +1,44 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_caption",
+      "evidence": "A caption asks for the OTP.",
+      "source": "video_text",
+      "context": "directed_at_recipient",
+      "quote": "Enter the OTP now",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 5.0,
+      "timestamp_end": 8.0
+    },
+    {
+      "category": "credential_request",
+      "name": "otp_caption_again",
+      "evidence": "The same caption asks for the OTP.",
+      "source": "video_text",
+      "context": "directed_at_recipient",
+      "quote": "Enter the OTP now",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 5.5,
+      "timestamp_end": 8.0
+    },
+    {
+      "category": "credential_request",
+      "name": "otp_caption_third",
+      "evidence": "The same caption asks for the OTP.",
+      "source": "video_text",
+      "context": "directed_at_recipient",
+      "quote": "Enter the OTP now",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 6.0,
+      "timestamp_end": 8.5
+    }
+  ]
+}

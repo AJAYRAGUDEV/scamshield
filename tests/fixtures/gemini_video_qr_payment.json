@@ -1,0 +1,32 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "payment_request",
+      "name": "qr_payment_demand",
+      "evidence": "The video asks the viewer to scan a QR code to pay a fee before a prize can be released.",
+      "source": "video_text",
+      "context": "directed_at_recipient",
+      "quote": "Scan to pay the Rs 4,999 release fee",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 6.0,
+      "timestamp_end": 12.0
+    },
+    {
+      "category": "advance_fee_or_prize",
+      "name": "prize_release_fee",
+      "evidence": "A prize is promised only after a payment.",
+      "source": "video_visual",
+      "context": "directed_at_recipient",
+      "quote": "you have won, pay the release fee",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 1.0,
+      "timestamp_end": 5.0
+    }
+  ]
+}

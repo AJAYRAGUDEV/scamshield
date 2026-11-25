@@ -1,0 +1,32 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "spoken_otp_request",
+      "evidence": "The caller asks the listener to read out a code.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "read me the code",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 45.0,
+      "timestamp_end": 48.0
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "hurry",
+      "evidence": "The caller says the listener must hurry.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "hurry up",
+      "severity": "medium",
+      "reliability": "moderate",
+      "timestamp_start": 0.05,
+      "timestamp_end": 0.2
+    }
+  ]
+}

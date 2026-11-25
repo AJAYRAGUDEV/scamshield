@@ -1,0 +1,20 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The video asks for an OTP.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "tell me the OTP",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 1.0,
+      "timestamp_end": 2.0
+    }
+  ]
+}

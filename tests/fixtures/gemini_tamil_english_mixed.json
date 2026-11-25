@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "Tamil and English (mixed)",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The message asks the recipient to share an OTP, mixing Tamil and English.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "OTP share பண்ணுங்க",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "urgency_pressure",
+      "name": "account_block_soon",
+      "evidence": "The message says the account will be blocked soon.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "உங்க account block ஆகிடும்",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

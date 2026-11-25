@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "remote_access_request",
+      "name": "install_remote_app",
+      "evidence": "The sender asks the recipient to install a remote-access app so they can 'fix' the account.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "install AnyDesk and tell me the code",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "organization_impersonation",
+      "name": "support_agent_claim",
+      "evidence": "The sender claims to be customer support.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "customer support executive",
+      "severity": "medium",
+      "reliability": "moderate"
+    }
+  ]
+}

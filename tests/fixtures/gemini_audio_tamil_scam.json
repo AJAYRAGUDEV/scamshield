@@ -1,0 +1,32 @@
+{
+  "coverage": "full",
+  "language": "Tamil",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "spoken_otp_request",
+      "evidence": "The caller asks the listener to say their OTP aloud, in Tamil.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "உங்கள் OTP சொல்லுங்கள்",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 6.0,
+      "timestamp_end": 9.0
+    },
+    {
+      "category": "authority_impersonation",
+      "name": "bank_claim",
+      "evidence": "The caller says they are from the bank.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "நான் வங்கியிலிருந்து பேசுகிறேன்",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 1.0,
+      "timestamp_end": 3.5
+    }
+  ]
+}

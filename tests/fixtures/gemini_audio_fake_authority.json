@@ -1,0 +1,32 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "authority_impersonation",
+      "name": "police_claim",
+      "evidence": "The caller claims to be a police officer.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "this is Inspector Kumar from the cyber police",
+      "severity": "high",
+      "reliability": "strong",
+      "timestamp_start": 1.0,
+      "timestamp_end": 4.0
+    },
+    {
+      "category": "threat_coercion",
+      "name": "arrest_threat",
+      "evidence": "The caller threatens arrest if the listener hangs up.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "you will be arrested if you disconnect",
+      "severity": "critical",
+      "reliability": "strong",
+      "timestamp_start": 9.0,
+      "timestamp_end": 12.0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "Hindi",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "threat_coercion",
+      "name": "account_closure_threat",
+      "evidence": "The message threatens that the bank account will be closed.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "आपका खाता बंद हो जाएगा",
+      "severity": "high",
+      "reliability": "strong"
+    },
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The message asks the recipient to tell the sender an OTP immediately.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "तुरंत OTP बताइए",
+      "severity": "critical",
+      "reliability": "strong"
+    }
+  ]
+}

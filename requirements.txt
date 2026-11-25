@@ -1,0 +1,9 @@
+# Runtime dependencies (Python 3.12). Lower bounds only; no old pins.
+fastapi>=0.115
+uvicorn>=0.30
+google-genai>=1.0          # Gemini is the only AI provider
+pydantic>=2.7
+python-multipart>=0.0.9    # multipart/form-data (audio upload, text form)
+python-dotenv>=1.0         # lets `uvicorn --env-file .env` load the environment file
+slowapi>=0.1.9             # rate limiting
+# Video validation also needs the ffprobe executable (FFmpeg), which is not a Python package: see the README.

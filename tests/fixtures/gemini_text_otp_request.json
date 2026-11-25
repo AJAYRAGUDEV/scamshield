@@ -1,0 +1,18 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The message tells the recipient to share their OTP with the sender.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "share your OTP now",
+      "severity": "critical",
+      "reliability": "strong"
+    }
+  ]
+}

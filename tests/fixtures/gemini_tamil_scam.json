@@ -1,0 +1,28 @@
+{
+  "coverage": "full",
+  "language": "Tamil",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "otp_request",
+      "evidence": "The message asks the recipient to share their OTP.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "உடனே OTP பகிருங்கள்",
+      "severity": "critical",
+      "reliability": "strong"
+    },
+    {
+      "category": "threat_coercion",
+      "name": "account_freeze_threat",
+      "evidence": "The message threatens that the bank account will be frozen.",
+      "source": "text_content",
+      "context": "directed_at_recipient",
+      "quote": "உங்கள் வங்கி கணக்கு முடக்கப்படும்",
+      "severity": "high",
+      "reliability": "strong"
+    }
+  ]
+}

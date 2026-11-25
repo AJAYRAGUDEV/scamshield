@@ -1,0 +1,26 @@
+# Never send secrets or local state into an image
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+tmp/
+
+# Not needed at runtime
+tests/
+legacy/
+docs/
+scripts/
+test.py
+README.md
+Dockerfile
+.dockerignore
+render.yaml
+.git/
+.gitignore
+.vscode/
+.idea/

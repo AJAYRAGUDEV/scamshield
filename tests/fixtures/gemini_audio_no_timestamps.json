@@ -1,0 +1,18 @@
+{
+  "coverage": "full",
+  "language": "English",
+  "language_uncertain": false,
+  "limitations": [],
+  "signals": [
+    {
+      "category": "credential_request",
+      "name": "spoken_otp_request",
+      "evidence": "The caller asks the listener to share a code.",
+      "source": "audio_speech",
+      "context": "directed_at_recipient",
+      "quote": "tell me the code",
+      "severity": "critical",
+      "reliability": "strong"
+    }
+  ]
+}
