@@ -1,4 +1,4 @@
-# ScamShield AI
+# [ScamShield AI](https://scamshield-uv3a.onrender.com/)
 
 ScamShield is a scam-risk assessment assistant. A user pastes a suspicious message or uploads an
 audio clip or a short video; Google Gemini extracts **evidence** of scam indicators, and the ScamShield **server**
